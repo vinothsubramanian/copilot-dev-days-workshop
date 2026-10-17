@@ -21,6 +21,49 @@ function isCorrect(question, selectedIndex) {
   return question.answer === selectedIndex;
 }
 
+function assertQuizState(state) {
+  if (
+    state === null ||
+    typeof state !== "object" ||
+    !Array.isArray(state.questions) ||
+    !Number.isInteger(state.current) ||
+    !Number.isInteger(state.score)
+  ) {
+    throw new TypeError("state must be a valid quiz state");
+  }
+}
+
+function createQuiz(questions) {
+  if (!Array.isArray(questions)) {
+    throw new TypeError("questions must be an array");
+  }
+  return { questions: [...questions], current: 0, score: 0 };
+}
+
+function answerQuestion(state, selectedIndex) {
+  assertQuizState(state);
+  const question = state.questions[state.current];
+  if (!question) {
+    throw new RangeError("there is no current question to answer");
+  }
+
+  const correct = isCorrect(question, selectedIndex);
+  return {
+    state: { ...state, score: state.score + (correct ? 1 : 0) },
+    correct,
+  };
+}
+
+function advanceQuiz(state) {
+  assertQuizState(state);
+  return { ...state, current: state.current + 1 };
+}
+
+function isQuizFinished(state) {
+  assertQuizState(state);
+  return state.current >= state.questions.length;
+}
+
 /**
  * Formats the remaining countdown seconds for display.
  */
@@ -69,6 +112,10 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     shuffle,
     isCorrect,
+    createQuiz,
+    answerQuestion,
+    advanceQuiz,
+    isQuizFinished,
     formatTimeLeft,
     calculatePercentage,
     getGrade,

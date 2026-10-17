@@ -5,11 +5,89 @@ const assert = require("node:assert/strict");
 const {
   shuffle,
   isCorrect,
+  createQuiz,
+  answerQuestion,
+  advanceQuiz,
+  isQuizFinished,
   formatTimeLeft,
   calculatePercentage,
   getGrade,
   getFeedbackMessage,
 } = require("../src/quiz.js");
+
+test("createQuiz creates a fresh state when given questions", () => {
+  const questions = [{ answer: 0 }];
+  const state = createQuiz(questions);
+
+  assert.deepEqual(state, { questions, current: 0, score: 0 });
+  assert.notEqual(state.questions, questions);
+});
+
+test("createQuiz creates an empty state when given no questions", () => {
+  assert.deepEqual(createQuiz([]), { questions: [], current: 0, score: 0 });
+});
+
+test("createQuiz rejects null when given an invalid question list", () => {
+  assert.throws(() => createQuiz(null), TypeError);
+});
+
+test("answerQuestion adds a point without mutation when the answer is correct", () => {
+  const state = { questions: [{ answer: 1 }], current: 0, score: 0 };
+  const result = answerQuestion(state, 1);
+
+  assert.equal(result.correct, true);
+  assert.deepEqual(result.state, { questions: state.questions, current: 0, score: 1 });
+  assert.deepEqual(state, { questions: [{ answer: 1 }], current: 0, score: 0 });
+  assert.notEqual(result.state, state);
+});
+
+test("answerQuestion leaves the score unchanged when the answer is wrong", () => {
+  const state = { questions: [{ answer: 1 }], current: 0, score: 2 };
+  const result = answerQuestion(state, 0);
+
+  assert.equal(result.correct, false);
+  assert.equal(result.state.score, 2);
+  assert.equal(state.score, 2);
+});
+
+test("answerQuestion treats a timeout as incorrect when no option is selected", () => {
+  const result = answerQuestion(
+    { questions: [{ answer: 1 }], current: 0, score: 0 },
+    null
+  );
+
+  assert.equal(result.correct, false);
+  assert.equal(result.state.score, 0);
+});
+
+test("answerQuestion rejects null when state is invalid", () => {
+  assert.throws(() => answerQuestion(null, 0), TypeError);
+});
+
+test("advanceQuiz returns a new state when moving to the next question", () => {
+  const state = { questions: [{ answer: 0 }, { answer: 1 }], current: 0, score: 1 };
+  const nextState = advanceQuiz(state);
+
+  assert.deepEqual(nextState, { questions: state.questions, current: 1, score: 1 });
+  assert.equal(state.current, 0);
+  assert.notEqual(nextState, state);
+});
+
+test("isQuizFinished returns false when questions remain", () => {
+  assert.equal(isQuizFinished({ questions: [{}, {}], current: 1, score: 0 }), false);
+});
+
+test("isQuizFinished returns true when all questions are complete", () => {
+  assert.equal(isQuizFinished({ questions: [{}], current: 1, score: 0 }), true);
+});
+
+test("isQuizFinished returns true when the quiz is empty", () => {
+  assert.equal(isQuizFinished(createQuiz([])), true);
+});
+
+test("isQuizFinished rejects null when state is invalid", () => {
+  assert.throws(() => isQuizFinished(null), TypeError);
+});
 
 test("isCorrect returns true for the right answer", () => {
   assert.equal(isCorrect({ answer: 2 }, 2), true);
