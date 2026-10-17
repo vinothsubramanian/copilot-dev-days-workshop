@@ -79,6 +79,8 @@ function showResults() {
   const percentage = calculatePercentage(state.score, total);
   scoreText.textContent = `You scored ${state.score} out of ${total} (${percentage}%)`;
   gradeText.textContent = `Grade: ${getGrade(percentage)}`;
+  const answerFeedback = getFeedbackMessage(getGrade(percentage));
+  document.getElementById("feedback-message").textContent = answerFeedback;
   showScreen(resultScreen);
 }
 

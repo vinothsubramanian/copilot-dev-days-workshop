@@ -36,6 +36,21 @@ const QUESTIONS = [
     ],
     answer: 1,
   },
+  {
+    question: "Which command stages all changes for the next commit?",
+    options: ["git add .", "git commit -m", "git push", "git status"],
+    answer: 0,
+  },
+  {
+    question: "What does `git push` do?",
+    options: [
+      "Uploads your local commits to a remote repository",
+      "Downloads changes from a remote repository",
+      "Creates a new branch",
+      "Deletes a branch",
+    ],
+    answer: 0,
+  },
 ];
 
 // Lets Node.js tests load this file. Browsers ignore this block.

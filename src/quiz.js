@@ -40,7 +40,21 @@ function getGrade(percentage) {
   return "Keep practicing";
 }
 
+// Returns an encouraging message for a grade: "A", "B", "C" or anything else
+function getFeedbackMessage(grade) {
+  switch (grade) {
+    case "A":
+      return "Excellent work!";
+    case "B":
+      return "Good job!";
+    case "C":
+      return "You can do better!";
+    default:
+      return "Keep practicing!";
+  }
+}
+
 // Lets Node.js tests load this file. Browsers ignore this block.
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { shuffle, isCorrect, calculatePercentage, getGrade };
+  module.exports = { shuffle, isCorrect, calculatePercentage, getGrade, getFeedbackMessage };
 }
