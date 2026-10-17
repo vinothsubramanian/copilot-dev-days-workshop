@@ -4,6 +4,9 @@ let state = createQuiz([]);
 const QUESTION_TIME_LIMIT = 15;
 let timerInterval = null;
 let timeLeft = QUESTION_TIME_LIMIT;
+const BEST_SCORE_STORAGE_KEY = "dev-days-quiz-best-score";
+let bestScore = null;
+let bestScoreAvailable = false;
 
 const startScreen = document.getElementById("start-screen");
 const quizScreen = document.getElementById("quiz-screen");
@@ -16,11 +19,68 @@ const feedbackText = document.getElementById("feedback");
 const nextButton = document.getElementById("next-btn");
 const scoreText = document.getElementById("score-text");
 const gradeText = document.getElementById("grade-text");
+const startBestScoreText = document.getElementById("best-score-start");
+const resultBestScoreText = document.getElementById("best-score-result");
+const recordMessage = document.getElementById("record-message");
 
 function showScreen(screenToShow) {
   [startScreen, quizScreen, resultScreen].forEach((screen) => {
     screen.hidden = screen !== screenToShow;
   });
+}
+
+function loadBestScore() {
+  let storedScore;
+  try {
+    storedScore = localStorage.getItem(BEST_SCORE_STORAGE_KEY);
+  } catch (error) {
+    console.warn("Unable to read the saved best score.", error);
+    bestScoreAvailable = false;
+    bestScore = null;
+    return;
+  }
+
+  if (storedScore === null) {
+    bestScoreAvailable = true;
+    bestScore = null;
+    return;
+  }
+
+  const parsedScore = Number(storedScore);
+  if (
+    storedScore !== String(parsedScore) ||
+    !Number.isInteger(parsedScore) ||
+    parsedScore < 0 ||
+    parsedScore > 100
+  ) {
+    console.warn("The saved best score is invalid.");
+    bestScoreAvailable = false;
+    bestScore = null;
+    return;
+  }
+
+  bestScoreAvailable = true;
+  bestScore = parsedScore;
+}
+
+function saveBestScore(score) {
+  try {
+    localStorage.setItem(BEST_SCORE_STORAGE_KEY, String(score));
+    return true;
+  } catch (error) {
+    console.warn("Unable to save the new best score.", error);
+    return false;
+  }
+}
+
+function renderBestScoreDisplays() {
+  const message = !bestScoreAvailable
+    ? "Best score unavailable"
+    : bestScore === null
+      ? "No best score yet"
+      : `Best score: ${bestScore}%`;
+  startBestScoreText.textContent = message;
+  resultBestScoreText.textContent = message;
 }
 
 function startQuiz() {
@@ -125,9 +185,32 @@ function showResults() {
   gradeText.textContent = `Grade: ${getGrade(percentage)}`;
   const answerFeedback = getFeedbackMessage(getGrade(percentage));
   document.getElementById("feedback-message").textContent = answerFeedback;
+  let unsavedBestScore = null;
+
+  if (!bestScoreAvailable) {
+    recordMessage.textContent = "Best score unavailable; this result could not be checked or saved.";
+  } else if (isNewBestScore(percentage, bestScore)) {
+    if (saveBestScore(percentage)) {
+      bestScore = percentage;
+      recordMessage.textContent = `🏆 New best score: ${percentage}%!`;
+    } else {
+      unsavedBestScore = percentage;
+      recordMessage.textContent = `🏆 New best score: ${percentage}%! It could not be saved.`;
+    }
+  } else {
+    recordMessage.textContent = "No new best score this time.";
+  }
+
+  renderBestScoreDisplays();
+  if (unsavedBestScore !== null) {
+    resultBestScoreText.textContent = `Best score: ${unsavedBestScore}% (not saved)`;
+  }
   showScreen(resultScreen);
 }
 
 document.getElementById("start-btn").addEventListener("click", startQuiz);
 document.getElementById("restart-btn").addEventListener("click", startQuiz);
 nextButton.addEventListener("click", nextQuestion);
+
+loadBestScore();
+renderBestScoreDisplays();
