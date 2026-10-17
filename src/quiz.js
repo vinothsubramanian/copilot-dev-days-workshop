@@ -22,6 +22,16 @@ function isCorrect(question, selectedIndex) {
 }
 
 /**
+ * Formats the remaining countdown seconds for display.
+ */
+function formatTimeLeft(seconds) {
+  if (!Number.isInteger(seconds) || seconds < 0) {
+    throw new TypeError("seconds must be a non-negative integer");
+  }
+  return `⏱ ${seconds}s`;
+}
+
+/**
  * Converts a score into a whole-number percentage (0-100).
  */
 function calculatePercentage(score, total) {
@@ -56,5 +66,12 @@ function getFeedbackMessage(grade) {
 
 // Lets Node.js tests load this file. Browsers ignore this block.
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { shuffle, isCorrect, calculatePercentage, getGrade, getFeedbackMessage };
+  module.exports = {
+    shuffle,
+    isCorrect,
+    formatTimeLeft,
+    calculatePercentage,
+    getGrade,
+    getFeedbackMessage,
+  };
 }
