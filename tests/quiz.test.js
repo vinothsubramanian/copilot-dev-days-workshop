@@ -8,6 +8,7 @@ const {
   formatTimeLeft,
   calculatePercentage,
   getGrade,
+  getFeedbackMessage,
 } = require("../src/quiz.js");
 
 test("isCorrect returns true for the right answer", () => {
@@ -51,6 +52,34 @@ test("shuffle keeps every item and does not change the original array", () => {
   assert.deepEqual(original, [1, 2, 3, 4, 5]);
 });
 
-test("getGrade gives an A for exactly 90%", () => {
+test("getGrade includes the A boundary at 90%", () => {
   assert.equal(getGrade(90), "A");
+  assert.equal(getGrade(89), "B");
+});
+
+test("getGrade includes the B boundary at 75%", () => {
+  assert.equal(getGrade(75), "B");
+  assert.equal(getGrade(74), "C");
+});
+
+test("getGrade includes the C boundary at 50%", () => {
+  assert.equal(getGrade(50), "C");
+  assert.equal(getGrade(49), "Keep practicing");
+});
+
+test("getFeedbackMessage returns the A message for an A grade", () => {
+  assert.equal(getFeedbackMessage("A"), "Excellent work!");
+});
+
+test("getFeedbackMessage returns the B message for a B grade", () => {
+  assert.equal(getFeedbackMessage("B"), "Good job!");
+});
+
+test("getFeedbackMessage returns the C message for a C grade", () => {
+  assert.equal(getFeedbackMessage("C"), "You can do better!");
+});
+
+test("getFeedbackMessage returns the default message for other grades", () => {
+  assert.equal(getFeedbackMessage("D"), "Keep practicing!");
+  assert.equal(getFeedbackMessage(null), "Keep practicing!");
 });
